@@ -1,33 +1,5 @@
-# Custom Resource to support AWS Certificate Manager
+This is a fork of [ryansb/acm-certs-cloudformation](https://github.com/ryansb/acm-certs-cloudformation), which adds custom AWS Lambdas
+for creating and associating AWS ACM resources with Cloudfront Distributions (A feature currently lacking in CF).
 
-This is a pair of resources to support adding the new [ACM][acm] SSL
-certificates automatically in CloudFormation. Right now, it creates a
-certificate request given a comma-separated list of domains. The second
-resource adds support for configuring the cert on a CloudFront distribution.
-
-Sample usage:
-
-```
-"ProdAcmCertificate": {
-    "Type": "Custom::AcmCertificateRequest",
-    "Properties": {
-        "Domains": ["mysite.com", "*.mysite.com"],
-        "ServiceToken": "ARN of your instance of the Lambda function in this repo"
-    }
-}
-```
-
-For a full example, see the `template.json` file in this repository. It creates
-a CloudFront distribution and issues an ACM certificate, and associates that
-cert with the distribution.
-
-Todo:
-- [x] Create a CertRequest
-- [x] Delete CertRequest on resource delete
-- [x] Sample CloudFormation template
-- [x] Wait for the cert to be issued
-- [ ] provide a boolean attribute for whether the cert is issued
-- [x] provide cert ID for CloudFront/ELB
-- [x] Handle updates?
-
-[acm]: https://aws.amazon.com/blogs/aws/new-aws-certificate-manager-deploy-ssltls-based-apps-on-aws/
+This fork fixes a simple error-handling bug as well as allows for the setting of ACM region, which is necessary
+in order to associate an ACM certificate to resources outside of us-east-1 (the only supported region of ACM)
