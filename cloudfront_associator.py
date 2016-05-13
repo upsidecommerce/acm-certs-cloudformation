@@ -10,7 +10,7 @@ log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
 cloudfront = boto3.client('cloudfront')
-acm = boto3.client('acm')
+acm = boto3.client('acm', region_name='us-east-1')
 
 def check_properties(event):
     properties = event['ResourceProperties']
@@ -41,11 +41,11 @@ def check_properties(event):
     except ClientError as e:
         code = e.response['ResponseMetadata']['HTTPStatusCode']
         if 400 <= code and code < 500:
-            log.error('Distribution %s could not be found, got code %d' % (dist_id, code))
+            log.error('ACM certificate %s could not be found, got code %d' % (cert_arn, code))
         log.exception('Failure getting cloudfront distribution')
         return {
             'Status': 'FAILED',
-            'Reason': 'Failed to get CloudFront distribution, check DistributionId property',
+            'Reason': 'Failed to get ACM certificate, check certificate ARN property. cert_arn:%s, code:%d' % (cert_arn, code),
             'PhysicalResourceId': 'could-not-create',
             'Data': {},
         }
@@ -59,7 +59,7 @@ def check_properties(event):
         log.exception('Failure getting cloudfront distribution, got code %d' % code)
         return {
             'Status': 'FAILED',
-            'Reason': 'Failed to get CloudFront distribution, check DistributionId property',
+            'Reason': 'Failed to get CloudFront distribution, check DistributionId property. dist_id:%s, code:%d' % (dist_id, code),
             'PhysicalResourceId': 'could-not-create',
             'Data': {},
         }
