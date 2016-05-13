@@ -10,11 +10,13 @@ log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
 cloudfront = boto3.client('cloudfront')
-acm = boto3.client('acm', region_name='us-east-1')
+
+def get_acm(region):
+    return boto3.client('acm', region_name=region)
 
 def check_properties(event):
     properties = event['ResourceProperties']
-    for p in ('CertificateArn', 'DistributionId'):
+    for p in ('CertificateArn', 'DistributionId', 'CertificateRegion'):
         if properties.get(p) is None:
             reason = "ERROR: No property '%s' on event %s" % (p, event)
             log.error(reason)
@@ -27,9 +29,10 @@ def check_properties(event):
 
     dist_id = properties['DistributionId']
     cert_arn = properties['CertificateArn']
+    cert_region = properties['CertificateRegion']
 
     try:
-        acm.get_certificate(CertificateArn=cert_arn)
+        get_acm(cert_region).get_certificate(CertificateArn=cert_arn)
     except ParamValidationError as e:
         log.exception('ARN for certificate not valid. Check CertificateArn property, got %s' % cert_arn)
         return {
